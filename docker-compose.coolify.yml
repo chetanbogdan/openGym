@@ -1,29 +1,6 @@
 name: opengym
 
 services:
-  media:
-    image: alpine/git
-    restart: "no"
-    volumes:
-      - opengym-media-img:/out/img
-      - opengym-media-gif:/out/gif
-    entrypoint: ["/bin/sh", "-c"]
-    command:
-      - |
-        if [ -z "$$(ls -A /out/img 2>/dev/null)" ]; then
-          echo "Downloading exercise media..."
-          git clone --depth 1 \
-            https://github.com/hasaneyldrm/exercises-dataset \
-            /tmp/ds
-
-          cp /tmp/ds/images/*.jpg /out/img/
-          cp /tmp/ds/videos/*.gif /out/gif/
-
-          echo "Exercise media ready."
-        else
-          echo "Exercise media already present."
-        fi
-
   api:
     build:
       context: ./api
@@ -72,28 +49,23 @@ services:
     image: opengym-web-local
     restart: unless-stopped
     depends_on:
-      media:
-        condition: service_completed_successfully
       api:
         condition: service_started
     environment:
-      NGINX_PORT: 80
+      NGINX_PORT: 8080
       BACKEND: api
       PORT: 3000
       RESOLVER: 127.0.0.11
       BASE_PATH: ${BASE_PATH:-}
       MEDIA_UPLOAD_MAX: ${MEDIA_UPLOAD_MAX:-48m}
       CF_CONNECTING_IP: ${CF_CONNECTING_IP:-}
-    volumes:
-      - opengym-media-img:/usr/share/nginx/html/img:ro
-      - opengym-media-gif:/usr/share/nginx/html/gif:ro
     networks:
       - opengym-internal
     healthcheck:
       test:
         [
           "CMD-SHELL",
-          "wget --spider -q http://127.0.0.1:80/ || exit 1"
+          "wget --spider -q http://127.0.0.1:8080/ || exit 1"
         ]
       interval: 15s
       timeout: 5s
@@ -108,5 +80,3 @@ networks:
 volumes:
   opengym-data:
   opengym-coach-auth:
-  opengym-media-img:
-  opengym-media-gif:
