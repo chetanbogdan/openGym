@@ -28,8 +28,6 @@ services:
     volumes:
       - opengym-data:/data
       - opengym-coach-auth:/coach-auth
-    networks:
-      - opengym-internal
     healthcheck:
       test:
         [
@@ -59,8 +57,6 @@ services:
       BASE_PATH: ${BASE_PATH:-}
       MEDIA_UPLOAD_MAX: ${MEDIA_UPLOAD_MAX:-48m}
       CF_CONNECTING_IP: ${CF_CONNECTING_IP:-}
-    networks:
-      - opengym-internal
     healthcheck:
       test:
         [
@@ -71,10 +67,6 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
-
-
-networks:
-  opengym-internal:
 
 
 volumes:
